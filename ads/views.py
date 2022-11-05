@@ -21,6 +21,17 @@ class CategoryView(View):
         return JsonResponse(response, safe=False)
 
 
+class CategoryDetailView(DetailView):
+    model = Category
+
+    def get(self, request, *args, **kwargs):
+        try:
+            category = self.get_object()
+        except Http404:
+            return JsonResponse({'error': 'Not found'}, status=404)
+
+        return JsonResponse(category.get_dict(), safe=False)
+
 @method_decorator(csrf_exempt, name='dispatch')
 class AdvertisementsView(View):
     def get(self, request):
@@ -30,3 +41,13 @@ class AdvertisementsView(View):
         [response.append(ad.get_dict()) for ad in ads]
 
         return JsonResponse(response, safe=False)
+
+class AdvertisementsDetailView(DetailView):
+    model = Advertisement
+
+    def get(self, request, *args, **kwargs):
+        try:
+            ad = self.get_object()
+        except Http404:
+            return JsonResponse({'error': 'Not found'}, status=404)
+        return JsonResponse(ad.get_dict(), safe=False)
