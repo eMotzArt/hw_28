@@ -20,6 +20,13 @@ class CategoryView(View):
 
         return JsonResponse(response, safe=False)
 
+    def post(self, request):
+        category_data = json.loads(request.body)
+        category = Category()
+        [setattr(category, name, value) for name, value in category_data.items()]
+        category.save()
+        return JsonResponse(category.get_dict(), safe=False)
+
 
 class CategoryDetailView(DetailView):
     model = Category
@@ -41,6 +48,13 @@ class AdvertisementsView(View):
         [response.append(ad.get_dict()) for ad in ads]
 
         return JsonResponse(response, safe=False)
+
+    def post(self, request):
+        ad_data = json.loads(request.body)
+        ad = Advertisement()
+        [setattr(ad, name, value) for name, value in ad_data.items()]
+        ad.save()
+        return JsonResponse(ad.get_dict(), safe=False)
 
 class AdvertisementsDetailView(DetailView):
     model = Advertisement
