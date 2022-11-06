@@ -8,4 +8,5 @@ Before launch for source-launch:
 
 For docker-launch:
 docker build -t SOME_NAME
+
 docker run -d -p 80:8000 SOME_NAME
