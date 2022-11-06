@@ -7,6 +7,6 @@ Before launch for source-launch:
 6) python manage.py runserver 0.0.0.0:8000
 
 For docker-launch:
-docker build -t SOME_NAME
+docker build -t SOME_NAME .
 
 docker run -d -p 80:8000 SOME_NAME
