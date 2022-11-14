@@ -6,6 +6,9 @@ class Location(models.Model):
     lat = models.FloatField()
     lng = models.FloatField()
 
+    def __str__(self):
+        return f"{self.id}: {self.name}"
+
 class User(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -15,6 +18,10 @@ class User(models.Model):
     age = models.PositiveSmallIntegerField()
     location = models.ForeignKey(Location, null=True, on_delete=models.SET_NULL)
 
+    def __str__(self):
+        return f"{self.id}: {self.first_name} {self.last_name}"
+
+
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
@@ -23,6 +30,9 @@ class Category(models.Model):
             'id': self.id,
             'name': self.name,
         }
+
+    def __str__(self):
+        return f"{self.id}: {self.name}"
 
 class Advertisement(models.Model):
     name = models.CharField(max_length=100)
@@ -42,3 +52,6 @@ class Advertisement(models.Model):
             'description': self.description,
             'is_published': self.is_published,
         }
+
+    def __str__(self):
+        return f"{self.id}: {self.name} - {self.price}"
