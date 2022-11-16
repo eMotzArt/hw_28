@@ -10,22 +10,6 @@ from .models import Category, Advertisement, User, Location
 def index(request):
     return JsonResponse({'status': 'ok'})
 
-@method_decorator(csrf_exempt, name='dispatch')
-class CategoryView(View):
-    def get(self, request):
-        categories = Category.objects.all()
-
-        response = []
-        [response.append(category.get_dict()) for category in categories]
-
-        return JsonResponse(response, safe=False)
-
-    def post(self, request):
-        category_data = json.loads(request.body)
-        category = Category()
-        [setattr(category, name, value) for name, value in category_data.items()]
-        category.save()
-        return JsonResponse(category.get_dict(), safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CategoryListView(ListView):
@@ -33,14 +17,15 @@ class CategoryListView(ListView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        categories = Category.objects.all()
 
         response = []
-        [response.append(category.get_dict()) for category in categories]
+        [response.append(category.get_dict()) for category in self.object_list]
 
         return JsonResponse(response, safe=False)
 
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class CategoryDetailView(DetailView):
     model = Category
 
@@ -52,34 +37,17 @@ class CategoryDetailView(DetailView):
 
         return JsonResponse(category.get_dict(), safe=False)
 
-@method_decorator(csrf_exempt, name='dispatch')
-class AdvertisementsView(View):
-    def get(self, request):
-        ads = Advertisement.objects.all()
-
-        response = []
-        [response.append(ad.get_dict()) for ad in ads]
-
-        return JsonResponse(response, safe=False)
-
-    def post(self, request):
-        ad_data = json.loads(request.body)
-        ad = Advertisement()
-        [setattr(ad, name, value) for name, value in ad_data.items()]
-        ad.save()
-        return JsonResponse(ad.get_dict(), safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AdvertisementsListView(ListView):
     model = Advertisement
 
+
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        ads = Advertisement.objects.all()
-
         response = []
-        [response.append(ad.get_dict()) for ad in ads]
+        [response.append(ad.get_dict()) for ad in self.object_list]
 
         return JsonResponse(response, safe=False)
 
@@ -108,10 +76,8 @@ class LocationsListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        locs = Location.objects.all()
-
         response = []
-        [response.append(loc.get_dict()) for loc in locs]
+        [response.append(loc.get_dict()) for loc in self.object_list]
 
         return JsonResponse(response, safe=False)
 
@@ -122,9 +88,7 @@ class UsersListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        users = User.objects.all()
-
         response = []
-        [response.append(user.get_dict()) for user in users]
+        [response.append(user.get_dict()) for user in self.object_list]
 
         return JsonResponse(response, safe=False)
