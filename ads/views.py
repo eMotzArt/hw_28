@@ -1,4 +1,5 @@
 from django.http import JsonResponse, Http404
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
@@ -49,7 +50,7 @@ class CategoryUpdateView(UpdateView):
     model = Category
     fields = ['name']
 
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
 
         category_data = json.loads(request.body)
@@ -99,13 +100,22 @@ class AdvertisementsCreateView(CreateView):
     model = Advertisement
     fields = ['name', 'author', 'price', 'description', 'category', 'is_published']
     def post(self, request, *args, **kwargs):
-
         ad_data = json.loads(request.body)
+
+        author_first_name, author_last_name = ad_data['author'].split()
+        try:
+            author = get_object_or_404(User, first_name=author_first_name, last_name=author_last_name)
+        except Http404:
+            return JsonResponse({'status': 'Author not found'}, status=404)
+
+        category_data = ad_data['category']
+        category, _ = Category.objects.get_or_create(name=category_data)
+
         ad = Advertisement.objects.create(name=ad_data['name'],
-                                          author=ad_data['author'],
+                                          author=author,
                                           price=ad_data['price'],
                                           description=ad_data['description'],
-                                          category=ad_data['category'],
+                                          category=category,
                                           is_published=ad_data['is_published']
                                           )
         return JsonResponse(ad.get_dict(), safe=False)
@@ -114,16 +124,26 @@ class AdvertisementsCreateView(CreateView):
 class AdvertisementsUpdateView(UpdateView):
     model = Advertisement
     fields = ['name', 'author', 'price', 'description', 'category', 'is_published']
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
 
         ad_data = json.loads(request.body)
 
+        author_first_name, author_last_name = ad_data['author'].split()
+        try:
+            author = get_object_or_404(User, first_name=author_first_name, last_name=author_last_name)
+        except Http404:
+            return JsonResponse({'status': 'Author not found'}, status=404)
+
+        category_data = ad_data['category']
+        category, _ = Category.objects.get_or_create(name=category_data)
+
+
         self.object.name = ad_data['name']
-        self.object.author = ad_data['author']
+        self.object.author = author
         self.object.price = ad_data['price']
         self.object.description = ad_data['description']
-        self.object.category = ad_data['category']
+        self.object.category = category
         self.object.is_published = ad_data['is_published']
 
         return JsonResponse(self.object.get_dict(), safe=False)
@@ -181,7 +201,7 @@ class LocationUpdateView(UpdateView):
     model = Location
     fields = ['name', 'lat', 'lng']
 
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
 
         location_data = json.loads(request.body)
@@ -234,13 +254,15 @@ class UserCreateView(CreateView):
 
     def post(self, request, *args, **kwargs):
         user_data = json.loads(request.body)
+        user_loc, _ = Location.objects.get_or_create(name=user_data['location'])
+
         user = User.objects.create(first_name=user_data['first_name'],
                                    last_name=user_data['last_name'],
                                    username=user_data['username'],
                                    password=user_data['password'],
                                    role=user_data['role'],
                                    age=user_data['age'],
-                                   location=user_data['location'])
+                                   location=user_loc)
         return JsonResponse(user.get_dict(), safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -249,17 +271,19 @@ class UserUpdateView(UpdateView):
     fields = ['first_name', 'last_name', 'username', 'password', 'role', 'age', 'location']
 
 
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
-
         user_data = json.loads(request.body)
+
+        user_loc, _ = Location.objects.get_or_create(name=user_data['location'])
+
         self.object.first_name = user_data['first_name']
         self.object.last_name = user_data['last_name']
         self.object.username = user_data['username']
         self.object.password = user_data['password']
         self.object.role = user_data['role']
         self.object.age = user_data['age']
-        self.object.location = user_data['location']
+        self.object.location = user_loc
 
 
 
