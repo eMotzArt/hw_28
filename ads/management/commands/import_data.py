@@ -1,18 +1,18 @@
-import json
 from pathlib import Path
 from django.core.management.base import BaseCommand
 from ads.models import Category, Advertisement, User, Location
-from ads.management.data import compile_jsons
+from ads.management.data import load_csv_as_json
 
 JSONS_PATH = Path(__file__).parent.parent.absolute().joinpath('data', 'datasets')
-CATEGORIES_FILE = JSONS_PATH.joinpath('categories.json')
-ADVERTISEMENTS_FILE = JSONS_PATH.joinpath('ads.json')
-LOCATIONS_FILE = JSONS_PATH.joinpath('location.json')
-USERS_FILE = JSONS_PATH.joinpath('user.json')
+CATEGORIES_FILE_CSV = JSONS_PATH.joinpath('categories.csv')
+ADVERTISEMENTS_FILE_CSV = JSONS_PATH.joinpath('ads.csv')
+LOCATIONS_FILE_CSV = JSONS_PATH.joinpath('location.csv')
+USERS_FILE_CSV = JSONS_PATH.joinpath('user.csv')
+
+
 class Command(BaseCommand):
     def import_categories(self):
-        with open(CATEGORIES_FILE) as file:
-            data = json.load(file)
+        data = load_csv_as_json(CATEGORIES_FILE_CSV)
 
         for item in data:
             item.pop('id')
@@ -23,8 +23,7 @@ class Command(BaseCommand):
         print('Categories was imported')
 
     def import_advertisements(self):
-        with open(ADVERTISEMENTS_FILE) as file:
-            data = json.load(file)
+        data = load_csv_as_json(ADVERTISEMENTS_FILE_CSV)
 
         for item in data:
             item.pop('id')
@@ -35,8 +34,8 @@ class Command(BaseCommand):
         print('Advertisements was imported')
 
     def import_locations(self):
-        with open(LOCATIONS_FILE, 'r', encoding='utf-8') as file:
-            data = json.load(file)
+        data = load_csv_as_json(LOCATIONS_FILE_CSV)
+
         for item in data:
             item.pop('id')
 
@@ -46,8 +45,7 @@ class Command(BaseCommand):
         print('Locations was imported')
 
     def import_users(self):
-        with open(USERS_FILE) as file:
-            data = json.load(file)
+        data = load_csv_as_json(USERS_FILE_CSV)
         for item in data:
             item.pop('id')
 
@@ -58,8 +56,7 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        compile_jsons()
-        self.import_categories()
         self.import_locations()
+        self.import_categories()
         self.import_users()
         self.import_advertisements()
