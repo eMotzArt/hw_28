@@ -76,7 +76,7 @@ class Advertisement(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     price = models.PositiveIntegerField()
     description = models.CharField(max_length=2000)
-    image = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='images/')
     category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
     is_published = models.BooleanField(default=False)
 
