@@ -88,7 +88,7 @@ class Advertisement(models.Model):
             'price': self.price,
             'description': self.description,
             'is_published': self.is_published,
-            'image': self.image,
+            'image': self.image.name,
             'category': self.category.get_dict(),
         }
 

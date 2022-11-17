@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -5,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 import json
 
+from project import settings
 from .models import Category, Advertisement, User, Location
 
 def index(request):
@@ -18,9 +20,18 @@ class CategoryListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        response = []
-        [response.append(category.get_dict()) for category in self.object_list]
+        paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
+        locs_page = []
+        [locs_page.append(category.get_dict()) for category in page_obj]
+
+        response = {
+            'items': locs_page,
+            'num_pages': paginator.num_pages,
+            'total': paginator.count
+        }
         return JsonResponse(response, safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -79,9 +90,18 @@ class AdvertisementsListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        response = []
-        [response.append(ad.get_dict()) for ad in self.object_list]
+        paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
+        ads_page = []
+        [ads_page.append(ad.get_dict()) for ad in page_obj]
+
+        response = {
+            'items': ads_page,
+            'num_pages': paginator.num_pages,
+            'total': paginator.count
+        }
         return JsonResponse(response, safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -167,9 +187,18 @@ class LocationsListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        response = []
-        [response.append(loc.get_dict()) for loc in self.object_list]
+        paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
+        locs_page = []
+        [locs_page.append(loc.get_dict()) for loc in page_obj]
+
+        response = {
+            'items': locs_page,
+            'num_pages': paginator.num_pages,
+            'total': paginator.count
+        }
         return JsonResponse(response, safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -230,9 +259,19 @@ class UsersListView(ListView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
 
-        response = []
-        [response.append(user.get_dict()) for user in self.object_list]
+        paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
+
+        users_page = []
+        [users_page.append(user.get_dict()) for user in page_obj]
+
+        response = {
+            'items': users_page,
+            'num_pages': paginator.num_pages,
+            'total': paginator.count
+        }
         return JsonResponse(response, safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
