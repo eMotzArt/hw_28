@@ -33,9 +33,22 @@ urlpatterns = [
     path('users/', ads.views.UsersListView.as_view()),
     path('users/create/', ads.views.UserCreateView.as_view()),
 
-    path('ads/<int:pk>', ads.views.AdvertisementsDetailView.as_view()),
+
+
     path('cat/<int:pk>', ads.views.CategoryDetailView.as_view()),
+    path('cat/<int:pk>/update/', ads.views.CategoryUpdateView.as_view()),
+    path('cat/<int:pk>/delete/', ads.views.CategoryDeleteView.as_view()),
+
+    path('ads/<int:pk>', ads.views.AdvertisementsDetailView.as_view()),
+    path('ads/<int:pk>/update/', ads.views.AdvertisementsUpdateView.as_view()),
+    path('ads/<int:pk>/delete/', ads.views.AdvertisementsDeleteView.as_view()),
+
     path('locs/<int:pk>', ads.views.LocationDetailView.as_view()),
+    path('locs/<int:pk>/update/', ads.views.LocationUpdateView.as_view()),
+    path('locs/<int:pk>/delete/', ads.views.LocationDeleteView.as_view()),
+
     path('users/<int:pk>', ads.views.UserDetailView.as_view()),
+    path('users/<int:pk>/update/', ads.views.UserUpdateView.as_view()),
+    path('users/<int:pk>/delete/', ads.views.UserDeleteView.as_view()),
 
 ]
