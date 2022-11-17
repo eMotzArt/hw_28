@@ -3,8 +3,8 @@ from django.db import models
 
 class Location(models.Model):
     name = models.CharField(max_length=100)
-    lat = models.FloatField()
-    lng = models.FloatField()
+    lat = models.FloatField(null=True)
+    lng = models.FloatField(null=True)
 
     class Meta:
         verbose_name = "Местоположение"
@@ -77,7 +77,7 @@ class Advertisement(models.Model):
     price = models.PositiveIntegerField()
     description = models.CharField(max_length=2000)
     image = models.CharField(max_length=100)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
     is_published = models.BooleanField(default=False)
 
     def get_dict(self):
