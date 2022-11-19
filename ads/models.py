@@ -21,8 +21,6 @@ class Location(models.Model):
             'lng': self.lng,
         }
 
-
-
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
 

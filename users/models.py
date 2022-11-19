@@ -28,5 +28,6 @@ class User(models.Model):
             'username': self.username,
             'role': self.role,
             'age': self.age,
+            'total_published_ads': self.advertisement_set.filter(is_published=True).count(),
             'location': self.location.get_dict(),
         }
