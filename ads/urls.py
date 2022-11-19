@@ -24,10 +24,4 @@ urlpatterns = [
     path('locs/<int:pk>/update/', ads.views.LocationUpdateView.as_view()),
     path('locs/<int:pk>/delete/', ads.views.LocationDeleteView.as_view()),
 
-
-    path('users/', ads.views.UsersListView.as_view()),
-    path('users/create/', ads.views.UserCreateView.as_view()),
-    path('users/<int:pk>', ads.views.UserDetailView.as_view()),
-    path('users/<int:pk>/update/', ads.views.UserUpdateView.as_view()),
-    path('users/<int:pk>/delete/', ads.views.UserDeleteView.as_view()),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

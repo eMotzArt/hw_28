@@ -1,6 +1,7 @@
 from pathlib import Path
 from django.core.management.base import BaseCommand
-from ads.models import Category, Advertisement, User, Location
+from ads.models import Category, Advertisement, Location
+from users.models import User
 from ads.management.data import load_csv_as_json
 
 JSONS_PATH = Path(__file__).parent.parent.absolute().joinpath('data', 'datasets')
