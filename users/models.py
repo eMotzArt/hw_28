@@ -13,6 +13,7 @@ class User(models.Model):
     location = models.ForeignKey('ads.Location', null=True, on_delete=models.SET_NULL)
 
     class Meta:
+        ordering = ['username']
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
