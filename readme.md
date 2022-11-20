@@ -8,9 +8,5 @@ Source-launch:
 7) python3 manage.py import_data
 8) python3 manage.py runserver localhost:8000
 
-
-
-For docker-launch:
-docker build -t SOME_NAME .
-
-docker run -d -p 80:8000 SOME_NAME
+Docker-compose launch:
+1) docker-compose up -d --build
