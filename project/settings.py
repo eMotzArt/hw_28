@@ -16,7 +16,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Default localhost server for non-docker running
-os.environ['DB_HOST'] = 'localhost'
+if not os.environ.get('DB_HOST'):
+    os.environ['DB_HOST'] = 'localhost'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
