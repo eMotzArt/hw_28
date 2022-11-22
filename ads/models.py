@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Location(models.Model):
+    slug = models.SlugField(max_length=50)
     name = models.CharField(max_length=100)
     lat = models.FloatField(null=True)
     lng = models.FloatField(null=True)
@@ -22,6 +23,7 @@ class Location(models.Model):
         }
 
 class Category(models.Model):
+    slug = models.SlugField(max_length=50)
     name = models.CharField(max_length=100, unique=True)
 
     class Meta:
@@ -42,7 +44,7 @@ class Advertisement(models.Model):
     class Meta:
         verbose_name = "Объявление"
         verbose_name_plural = "Объявления"
-
+    slug = models.SlugField(max_length=50)
     name = models.CharField(max_length=100)
     author = models.ForeignKey('users.User', on_delete=models.CASCADE)
     price = models.PositiveIntegerField()
