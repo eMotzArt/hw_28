@@ -8,6 +8,7 @@ import json
 
 from project import settings
 from ads.models import Category, Advertisement, Location
+from ads.serializers import LocationSerializer
 from users.models import User
 
 def index(request):
@@ -195,11 +196,8 @@ class LocationsListView(ListView):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        locs_page = []
-        [locs_page.append(loc.get_dict()) for loc in page_obj]
-
         response = {
-            'items': locs_page,
+            'items': LocationSerializer(page_obj, many=True).data,
             'num_pages': paginator.num_pages,
             'total': paginator.count
         }
@@ -211,10 +209,10 @@ class LocationDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         try:
-            loc = self.get_object()
+            super().get(request, *args, **kwargs)
         except Http404:
             return JsonResponse({'error': 'Not found'}, status=404)
-        return JsonResponse(loc.get_dict(), safe=False)
+        return JsonResponse(LocationSerializer(self.object).data, safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LocationCreateView(CreateView):
