@@ -2,7 +2,6 @@ import json
 
 from django.core.paginator import Paginator
 from django.http import JsonResponse, Http404
-from django.shortcuts import render
 
 # Create your views here.
 from django.utils.decorators import method_decorator
@@ -12,6 +11,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from ads.models import Location
 from project import settings
 from users.models import User
+from users.serializers import UserSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -25,12 +25,8 @@ class UsersListView(ListView):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-
-        users_page = []
-        [users_page.append(user.get_dict()) for user in page_obj]
-
         response = {
-            'items': users_page,
+            'items': UserSerializer(page_obj, many=True).data,
             'num_pages': paginator.num_pages,
             'total': paginator.count
         }
@@ -42,10 +38,10 @@ class UserDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         try:
-            user = self.get_object()
+            super().get(request, *args, **kwargs)
         except Http404:
             return JsonResponse({'error': 'Not found'}, status=404)
-        return JsonResponse(user.get_dict(), safe=False)
+        return JsonResponse(UserSerializer(self.object).data, safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserCreateView(CreateView):

@@ -8,7 +8,7 @@ import json
 
 from project import settings
 from ads.models import Category, Advertisement, Location
-from ads.serializers import LocationSerializer
+from ads.serializers import LocationSerializer, AdvertisementSerializer, CategorySerializer
 from users.models import User
 
 def index(request):
@@ -27,11 +27,8 @@ class CategoryListView(ListView):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        locs_page = []
-        [locs_page.append(category.get_dict()) for category in page_obj]
-
         response = {
-            'items': locs_page,
+            'items': CategorySerializer(page_obj, many=True).data,
             'num_pages': paginator.num_pages,
             'total': paginator.count
         }
@@ -43,11 +40,11 @@ class CategoryDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         try:
-            category = self.get_object()
+            super().get(request, *args, **kwargs)
         except Http404:
             return JsonResponse({'error': 'Not found'}, status=404)
 
-        return JsonResponse(category.get_dict(), safe=False)
+        return JsonResponse(CategorySerializer(self.object).data, safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CategoryCreateView(CreateView):
@@ -99,11 +96,8 @@ class AdvertisementsListView(ListView):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        ads_page = []
-        [ads_page.append(ad.get_dict()) for ad in page_obj]
-
         response = {
-            'items': ads_page,
+            'items': AdvertisementSerializer(page_obj, many=True).data,
             'num_pages': paginator.num_pages,
             'total': paginator.count
         }
@@ -115,10 +109,10 @@ class AdvertisementsDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         try:
-            ad = self.get_object()
+            super().get(request, *args, **kwargs)
         except Http404:
             return JsonResponse({'error': 'Not found'}, status=404)
-        return JsonResponse(ad.get_dict(), safe=False)
+        return JsonResponse(AdvertisementSerializer(self.object).data, safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AdvertisementsCreateView(CreateView):
