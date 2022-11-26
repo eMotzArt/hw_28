@@ -6,6 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 import json
 
+from rest_framework.viewsets import ModelViewSet
+
 from project import settings
 from ads.models import Category, Advertisement, Location
 from ads.serializers import LocationSerializer, AdvertisementSerializer, CategorySerializer
@@ -178,73 +180,6 @@ class AdvertisementsDeleteView(DeleteView):
         return JsonResponse({'status': 'ok'}, status=200)
 
 
-
-@method_decorator(csrf_exempt, name='dispatch')
-class LocationsListView(ListView):
-    model = Location
-
-    def get(self, request, *args, **kwargs):
-        super().get(request, *args, **kwargs)
-
-        paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-
-        response = {
-            'items': LocationSerializer(page_obj, many=True).data,
-            'num_pages': paginator.num_pages,
-            'total': paginator.count
-        }
-        return JsonResponse(response, safe=False)
-
-@method_decorator(csrf_exempt, name='dispatch')
-class LocationDetailView(DetailView):
-    model = Location
-
-    def get(self, request, *args, **kwargs):
-        try:
-            super().get(request, *args, **kwargs)
-        except Http404:
-            return JsonResponse({'error': 'Not found'}, status=404)
-        return JsonResponse(LocationSerializer(self.object).data, safe=False)
-
-@method_decorator(csrf_exempt, name='dispatch')
-class LocationCreateView(CreateView):
-    model = Location
-    fields = ['name', 'lat', 'lng']
-
-    def post(self, request, *args, **kwargs):
-        location_data = json.loads(request.body)
-        location = Location.objects.create(name=location_data['name'],
-                                           lat=location_data['lat'],
-                                           lng=location_data['lng']
-                                           )
-        return JsonResponse(location.get_dict(), safe=False)
-
-@method_decorator(csrf_exempt, name='dispatch')
-class LocationUpdateView(UpdateView):
-    model = Location
-    fields = ['name', 'lat', 'lng']
-
-    def patch(self, request, *args, **kwargs):
-        super().post(request, *args, **kwargs)
-
-        location_data = json.loads(request.body)
-        self.object.name = location_data['name']
-        self.object.lat = location_data['lat']
-        self.object.lng = location_data['lng']
-
-        return JsonResponse(self.object.get_dict(), safe=False)
-
-@method_decorator(csrf_exempt, name='dispatch')
-class LocationDeleteView(DeleteView):
-    model = Location
-    success_url = "/"
-
-    def delete(self, request, *args, **kwargs):
-        super().delete(request, *args, **kwargs)
-
-        return JsonResponse({'status': 'ok'}, status=200)
-
-
-
+class LocationViewSet(ModelViewSet):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer

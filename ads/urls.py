@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
+from rest_framework import routers
+
 import ads.views
 
 urlpatterns = [
@@ -17,11 +19,9 @@ urlpatterns = [
     path('ads/<int:pk>/update/', ads.views.AdvertisementsUpdateView.as_view()),
     path('ads/<int:pk>/delete/', ads.views.AdvertisementsDeleteView.as_view()),
 
-
-    path('locs/', ads.views.LocationsListView.as_view()),
-    path('locs/create/', ads.views.LocationCreateView.as_view()),
-    path('locs/<int:pk>', ads.views.LocationDetailView.as_view()),
-    path('locs/<int:pk>/update/', ads.views.LocationUpdateView.as_view()),
-    path('locs/<int:pk>/delete/', ads.views.LocationDeleteView.as_view()),
-
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+locations_router = routers.SimpleRouter()
+locations_router.register('locations', ads.views.LocationViewSet)
+urlpatterns += locations_router.urls
+
