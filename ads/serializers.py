@@ -6,7 +6,7 @@ from ads.models import Location, Category, Advertisement
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
-        fields = ['id', 'slug', 'name', 'lat', 'lng']
+        fields = '__all__'
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

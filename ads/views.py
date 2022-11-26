@@ -86,10 +86,22 @@ class CategoryDeleteView(DeleteView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class AdvertisementsListView(ListView):
+    queryset = Advertisement.objects.all()
     model = Advertisement
 
 
     def get(self, request, *args, **kwargs):
+        if category_id := request.GET.get('cat'):
+            self.queryset = self.queryset.filter(category_id=category_id)
+        if topic_text := request.GET.get('text'):
+            self.queryset = self.queryset.filter(name__icontains=topic_text)
+        if location := request.GET.get('location'):
+            self.queryset = self.queryset.filter(author__location__name__icontains=location)
+        if price_from := request.GET.get('price_from'):
+            self.queryset = self.queryset.filter(price__gte=price_from)
+        if price_to := request.GET.get('price_to'):
+            self.queryset = self.queryset.filter(price__lte=price_to)
+
         super().get(request, *args, **kwargs)
         self.object_list = self.object_list.order_by('-price')
 
