@@ -1,67 +1,197 @@
+from django.core.paginator import Paginator
 from django.http import JsonResponse, Http404
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views import View
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 import json
 
-from .models import Category, Advertisement
+from rest_framework.viewsets import ModelViewSet
+
+from project import settings
+from ads.models import Category, Advertisement, Location
+from ads.serializers import LocationSerializer, AdvertisementSerializer, CategorySerializer
+from users.models import User
 
 def index(request):
     return JsonResponse({'status': 'ok'})
 
+
 @method_decorator(csrf_exempt, name='dispatch')
-class CategoryView(View):
-    def get(self, request):
-        categories = Category.objects.all()
+class CategoryListView(ListView):
+    model = Category
 
-        response = []
-        [response.append(category.get_dict()) for category in categories]
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        self.object_list = self.object_list.order_by('name')
 
+        paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        response = {
+            'items': CategorySerializer(page_obj, many=True).data,
+            'num_pages': paginator.num_pages,
+            'total': paginator.count
+        }
         return JsonResponse(response, safe=False)
 
-    def post(self, request):
-        category_data = json.loads(request.body)
-        category = Category()
-        [setattr(category, name, value) for name, value in category_data.items()]
-        category.save()
-        return JsonResponse(category.get_dict(), safe=False)
-
-
+@method_decorator(csrf_exempt, name='dispatch')
 class CategoryDetailView(DetailView):
     model = Category
 
     def get(self, request, *args, **kwargs):
         try:
-            category = self.get_object()
+            super().get(request, *args, **kwargs)
         except Http404:
             return JsonResponse({'error': 'Not found'}, status=404)
 
+        return JsonResponse(CategorySerializer(self.object).data, safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CategoryCreateView(CreateView):
+    model = Category
+    fields = ['name']
+
+    def post(self, request, *args, **kwargs):
+        category_data = json.loads(request.body)
+        category = Category.objects.create(name=category_data['name'])
         return JsonResponse(category.get_dict(), safe=False)
 
 @method_decorator(csrf_exempt, name='dispatch')
-class AdvertisementsView(View):
-    def get(self, request):
-        ads = Advertisement.objects.all()
+class CategoryUpdateView(UpdateView):
+    model = Category
+    fields = ['name']
 
-        response = []
-        [response.append(ad.get_dict()) for ad in ads]
+    def patch(self, request, *args, **kwargs):
+        super().post(request, *args, **kwargs)
 
+        category_data = json.loads(request.body)
+        self.object.name = category_data['name']
+
+        self.object.save()
+        return JsonResponse(self.object.get_dict(), safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CategoryDeleteView(DeleteView):
+    model = Category
+    success_url = "/"
+
+    def delete(self, request, *args, **kwargs):
+        super().delete(request, *args, **kwargs)
+
+        return JsonResponse({'status': 'ok'}, status=200)
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdvertisementsListView(ListView):
+    queryset = Advertisement.objects.all()
+    model = Advertisement
+
+
+    def get(self, request, *args, **kwargs):
+        if category_id := request.GET.get('cat'):
+            self.queryset = self.queryset.filter(category_id=category_id)
+        if topic_text := request.GET.get('text'):
+            self.queryset = self.queryset.filter(name__icontains=topic_text)
+        if location := request.GET.get('location'):
+            self.queryset = self.queryset.filter(author__location__name__icontains=location)
+        if price_from := request.GET.get('price_from'):
+            self.queryset = self.queryset.filter(price__gte=price_from)
+        if price_to := request.GET.get('price_to'):
+            self.queryset = self.queryset.filter(price__lte=price_to)
+
+        super().get(request, *args, **kwargs)
+        self.object_list = self.object_list.order_by('-price')
+
+
+        paginator = Paginator(self.object_list, settings.TOTAL_ON_PAGE)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        response = {
+            'items': AdvertisementSerializer(page_obj, many=True).data,
+            'num_pages': paginator.num_pages,
+            'total': paginator.count
+        }
         return JsonResponse(response, safe=False)
 
-    def post(self, request):
-        ad_data = json.loads(request.body)
-        ad = Advertisement()
-        [setattr(ad, name, value) for name, value in ad_data.items()]
-        ad.save()
-        return JsonResponse(ad.get_dict(), safe=False)
-
+@method_decorator(csrf_exempt, name='dispatch')
 class AdvertisementsDetailView(DetailView):
     model = Advertisement
 
     def get(self, request, *args, **kwargs):
         try:
-            ad = self.get_object()
+            super().get(request, *args, **kwargs)
         except Http404:
             return JsonResponse({'error': 'Not found'}, status=404)
+        return JsonResponse(AdvertisementSerializer(self.object).data, safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdvertisementsCreateView(CreateView):
+    model = Advertisement
+    fields = ['name', 'author', 'price', 'description', 'category', 'is_published']
+    def post(self, request, *args, **kwargs):
+        ad_data = json.loads(request.body)
+
+        author_first_name, author_last_name = ad_data['author'].split()
+        try:
+            author = get_object_or_404(User, first_name=author_first_name, last_name=author_last_name)
+        except Http404:
+            return JsonResponse({'status': 'Author not found'}, status=404)
+
+        category_data = ad_data['category']
+        category, _ = Category.objects.get_or_create(name=category_data)
+
+        ad = Advertisement.objects.create(name=ad_data['name'],
+                                          author=author,
+                                          price=ad_data['price'],
+                                          description=ad_data['description'],
+                                          category=category,
+                                          is_published=ad_data['is_published']
+                                          )
         return JsonResponse(ad.get_dict(), safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdvertisementsUpdateView(UpdateView):
+    model = Advertisement
+    fields = ['name', 'author', 'price', 'description', 'category', 'is_published']
+    def patch(self, request, *args, **kwargs):
+        super().post(request, *args, **kwargs)
+
+        ad_data = json.loads(request.body)
+
+        author_first_name, author_last_name = ad_data['author'].split()
+        try:
+            author = get_object_or_404(User, first_name=author_first_name, last_name=author_last_name)
+        except Http404:
+            return JsonResponse({'status': 'Author not found'}, status=404)
+
+        category_data = ad_data['category']
+        category, _ = Category.objects.get_or_create(name=category_data)
+
+
+        self.object.name = ad_data['name']
+        self.object.author = author
+        self.object.price = ad_data['price']
+        self.object.description = ad_data['description']
+        self.object.category = category
+        self.object.is_published = ad_data['is_published']
+
+        return JsonResponse(self.object.get_dict(), safe=False)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdvertisementsDeleteView(DeleteView):
+    model = Advertisement
+    success_url = "/"
+
+    def delete(self, request, *args, **kwargs):
+        super().delete(request, *args, **kwargs)
+
+        return JsonResponse({'status': 'ok'}, status=200)
+
+
+class LocationViewSet(ModelViewSet):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer

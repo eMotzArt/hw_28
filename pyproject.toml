@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "hw27_g"
+name = "hw28_g"
 version = "0.1.0"
 description = ""
 authors = ["emotzart <johnshuabratsk@gmail.com>"]
@@ -7,6 +7,9 @@ authors = ["emotzart <johnshuabratsk@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 Django = "^4.1.3"
+psycopg2-binary = "^2.9.5"
+Pillow = "^9.3.0"
+djangorestframework = "^3.14.0"
 
 [tool.poetry.dev-dependencies]
 
